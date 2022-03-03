@@ -8,7 +8,7 @@ namespace BotheringBugs.Models
     {
         public int Id { get; set; }
         [DisplayName("Ticket")]
-        public string TicketId { get; set; }
+        public int TicketId { get; set; }
         [DisplayName("File Date")]
         public DateTimeOffset Created { get; set; }
         [DisplayName("Team Member")]
