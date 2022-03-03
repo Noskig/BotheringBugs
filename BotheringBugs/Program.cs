@@ -1,5 +1,7 @@
 using BotheringBugs.Data;
 using BotheringBugs.Models;
+using BotheringBugs.Services;
+using BotheringBugs.Services.Interfaces;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -18,8 +20,8 @@ builder.Services.AddIdentity<BBUser, IdentityRole>(options => options.SignIn.Req
     .AddDefaultUI()
     .AddDefaultTokenProviders();
 
-
-
+builder.Services.AddScoped<IBBRolesService, BBRoleService>();
+builder.Services.AddScoped<IBBCompanyInfoService, BBCompanyInfoService>();
 
 builder.Services.AddControllersWithViews();
 

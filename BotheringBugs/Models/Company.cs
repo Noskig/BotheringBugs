@@ -13,5 +13,6 @@ namespace BotheringBugs.Models
         //Navigation prop
         public virtual ICollection<BBUser> Members { get; set; }
         public virtual ICollection<Project> Projects { get; set; }
+        public virtual ICollection<Invite> Invites { get; set; }
     }
 }
