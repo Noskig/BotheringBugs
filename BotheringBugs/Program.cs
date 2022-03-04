@@ -20,8 +20,11 @@ builder.Services.AddIdentity<BBUser, IdentityRole>(options => options.SignIn.Req
     .AddDefaultUI()
     .AddDefaultTokenProviders();
 
+// Custom Services
 builder.Services.AddScoped<IBBRolesService, BBRoleService>();
 builder.Services.AddScoped<IBBCompanyInfoService, BBCompanyInfoService>();
+builder.Services.AddScoped<IBBProjectService, BBProjectService>();
+builder.Services.AddScoped<IBBTicketService, BBTickerService>();
 
 builder.Services.AddControllersWithViews();
 

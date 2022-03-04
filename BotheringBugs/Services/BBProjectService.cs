@@ -12,7 +12,7 @@ namespace BotheringBugs.Services
         private readonly ApplicationDbContext _context;
         private readonly UserManager<BBUser> _userManager;
 
-        private readonly IBBRolesService _roleService;
+        private readonly IBBRolesService _rolesService;
 
         public BBProjectService(ApplicationDbContext context,
                                 UserManager<BBUser> userManager,
@@ -21,7 +21,7 @@ namespace BotheringBugs.Services
             _context = context;
             _userManager = userManager;
 
-            _roleService = roleService;
+            _rolesService = roleService;
         }
         // CRUD - Create
         public async Task AddNewProjectAsync(Project project)
@@ -32,7 +32,33 @@ namespace BotheringBugs.Services
 
         public async Task<bool> AddProjectManagerAsync(string userId, int projectId)
         {
-            throw new NotImplementedException();
+            BBUser currentPM = await GetProjectManagerAsync(projectId);
+
+            //remov the current PM if necessary
+            if(currentPM != null)
+            {
+                try
+                {
+                    await RemoveProjectManagerAsync(projectId);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error - error removing current PM. {ex.Message}");
+                    return false;
+                }
+            }
+            try
+            {
+                await AddProjectManagerAsync(userId, projectId);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error - error Adding PM. {ex.Message}");
+                return false;
+            }
+
+
         }
 
         public async Task<bool> AddUserToProjectAsync(string userId, int projectId)
@@ -148,7 +174,18 @@ namespace BotheringBugs.Services
 
         public async Task<BBUser> GetProjectManagerAsync(int projectId)
         {
-            throw new NotImplementedException();
+            Project project = await _context.Projects.Include(p=>p.Members).FirstOrDefaultAsync(p => p.Id == projectId);
+
+            foreach (BBUser member in project?.Members)
+            {
+                if(await _rolesService.IsUserInRoleAsync(member, Roles.ProjectManager.ToString()))
+                {
+                    return member;
+                }
+
+            }
+            return null;
+
         }
 
         public async Task<List<BBUser>> GetProjectMembersByRoleAsync(int projectId, string role)
@@ -159,7 +196,7 @@ namespace BotheringBugs.Services
 
             foreach (var user in project.Members)
             {
-                if (await _roleService.IsUserInRoleAsync(user, role))
+                if (await _rolesService.IsUserInRoleAsync(user, role))
                 {
                     members.Add(user);
                 }
@@ -238,7 +275,23 @@ namespace BotheringBugs.Services
 
         public async Task RemoveProjectManagerAsync(int projectId)
         {
-            throw new NotImplementedException();
+            Project project = await _context.Projects.Include(p=>p.Members)
+                                                        .FirstOrDefaultAsync(p=> p.Id == projectId);
+            try
+            {
+                foreach (BBUser member in project?.Members)
+                {
+                    if(await _rolesService.IsUserInRoleAsync(member, Roles.ProjectManager.ToString()))
+                    {
+                        await RemoveUserFromProjectAsync(member.Id, projectId);
+                    }
+                }
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+
         }
 
         public async Task RemoveUserFromProjectAsync(string userId, int projectId)
