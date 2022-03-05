@@ -25,6 +25,7 @@ builder.Services.AddScoped<IBBRolesService, BBRoleService>();
 builder.Services.AddScoped<IBBCompanyInfoService, BBCompanyInfoService>();
 builder.Services.AddScoped<IBBProjectService, BBProjectService>();
 builder.Services.AddScoped<IBBTicketService, BBTickerService>();
+builder.Services.AddScoped<IBBTicketHistoryService, BBTicketHistoryService>();
 
 builder.Services.AddControllersWithViews();
 
