@@ -22,7 +22,7 @@ namespace BotheringBugs.Controllers
         // GET: Invites
         public async Task<IActionResult> Index()
         {
-            var applicationDbContext = _context.Ivites.Include(i => i.Company).Include(i => i.Invitee).Include(i => i.Invitor).Include(i => i.Project);
+            var applicationDbContext = _context.Invites.Include(i => i.Company).Include(i => i.Invitee).Include(i => i.Invitor).Include(i => i.Project);
             return View(await applicationDbContext.ToListAsync());
         }
 
@@ -34,7 +34,7 @@ namespace BotheringBugs.Controllers
                 return NotFound();
             }
 
-            var invite = await _context.Ivites
+            var invite = await _context.Invites
                 .Include(i => i.Company)
                 .Include(i => i.Invitee)
                 .Include(i => i.Invitor)
@@ -86,7 +86,7 @@ namespace BotheringBugs.Controllers
                 return NotFound();
             }
 
-            var invite = await _context.Ivites.FindAsync(id);
+            var invite = await _context.Invites.FindAsync(id);
             if (invite == null)
             {
                 return NotFound();
@@ -145,7 +145,7 @@ namespace BotheringBugs.Controllers
                 return NotFound();
             }
 
-            var invite = await _context.Ivites
+            var invite = await _context.Invites
                 .Include(i => i.Company)
                 .Include(i => i.Invitee)
                 .Include(i => i.Invitor)
@@ -164,15 +164,15 @@ namespace BotheringBugs.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var invite = await _context.Ivites.FindAsync(id);
-            _context.Ivites.Remove(invite);
+            var invite = await _context.Invites.FindAsync(id);
+            _context.Invites.Remove(invite);
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
 
         private bool InviteExists(int id)
         {
-            return _context.Ivites.Any(e => e.Id == id);
+            return _context.Invites.Any(e => e.Id == id);
         }
     }
 }

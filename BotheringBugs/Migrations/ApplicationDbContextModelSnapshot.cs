@@ -193,7 +193,7 @@ namespace BotheringBugs.Migrations
 
                     b.HasIndex("ProjectId");
 
-                    b.ToTable("Ivites");
+                    b.ToTable("Invites");
                 });
 
             modelBuilder.Entity("BotheringBugs.Models.Notification", b =>
@@ -203,9 +203,6 @@ namespace BotheringBugs.Migrations
                         .HasColumnType("integer");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("BBUserId")
-                        .HasColumnType("text");
 
                     b.Property<DateTimeOffset>("Created")
                         .HasColumnType("timestamp with time zone");
@@ -234,9 +231,9 @@ namespace BotheringBugs.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("BBUserId");
-
                     b.HasIndex("RecipientId");
+
+                    b.HasIndex("SenderId");
 
                     b.HasIndex("TicketId");
 
@@ -687,7 +684,7 @@ namespace BotheringBugs.Migrations
             modelBuilder.Entity("BotheringBugs.Models.Invite", b =>
                 {
                     b.HasOne("BotheringBugs.Models.Company", "Company")
-                        .WithMany()
+                        .WithMany("Invites")
                         .HasForeignKey("CompanyId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -717,13 +714,15 @@ namespace BotheringBugs.Migrations
 
             modelBuilder.Entity("BotheringBugs.Models.Notification", b =>
                 {
-                    b.HasOne("BotheringBugs.Models.BBUser", "BBUser")
-                        .WithMany()
-                        .HasForeignKey("BBUserId");
-
                     b.HasOne("BotheringBugs.Models.BBUser", "Recipient")
                         .WithMany()
                         .HasForeignKey("RecipientId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("BotheringBugs.Models.BBUser", "Sender")
+                        .WithMany()
+                        .HasForeignKey("SenderId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -733,9 +732,9 @@ namespace BotheringBugs.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("BBUser");
-
                     b.Navigation("Recipient");
+
+                    b.Navigation("Sender");
 
                     b.Navigation("Ticket");
                 });
@@ -845,7 +844,7 @@ namespace BotheringBugs.Migrations
                         .HasForeignKey("BBUserId");
 
                     b.HasOne("BotheringBugs.Models.Ticket", "Ticket")
-                        .WithMany("Histories")
+                        .WithMany("History")
                         .HasForeignKey("TicketId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -908,6 +907,8 @@ namespace BotheringBugs.Migrations
 
             modelBuilder.Entity("BotheringBugs.Models.Company", b =>
                 {
+                    b.Navigation("Invites");
+
                     b.Navigation("Members");
 
                     b.Navigation("Projects");
@@ -924,7 +925,7 @@ namespace BotheringBugs.Migrations
 
                     b.Navigation("Comments");
 
-                    b.Navigation("Histories");
+                    b.Navigation("History");
 
                     b.Navigation("Notifications");
                 });

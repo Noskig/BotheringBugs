@@ -33,7 +33,7 @@ namespace BotheringBugs.Models
         //Navigation Prop
         public virtual Ticket Ticket { get; set; }
         public virtual BBUser Recipient { get; set; }
-        public virtual BBUser BBUser { get; set; }
+        public virtual BBUser Sender { get; set; }
 
     }
 }

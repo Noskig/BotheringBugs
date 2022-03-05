@@ -12,7 +12,7 @@ namespace BotheringBugs.Data
         }
 
         public DbSet<Company> Companies{ get; set; }
-        public DbSet<Invite> Ivites { get; set; }
+        public DbSet<Invite> Invites { get; set; }
         public DbSet<Project> Projects { get; set; }
         public DbSet<Ticket> Tickets { get; set; }
         public DbSet<Notification> Notifications { get; set; }

@@ -3,6 +3,7 @@ using BotheringBugs.Models;
 using BotheringBugs.Services;
 using BotheringBugs.Services.Interfaces;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -26,6 +27,11 @@ builder.Services.AddScoped<IBBCompanyInfoService, BBCompanyInfoService>();
 builder.Services.AddScoped<IBBProjectService, BBProjectService>();
 builder.Services.AddScoped<IBBTicketService, BBTickerService>();
 builder.Services.AddScoped<IBBTicketHistoryService, BBTicketHistoryService>();
+builder.Services.AddScoped<IBBNotificationService, BBNotificationService>();
+builder.Services.AddScoped<IBBInviteService, BBInviteService>();
+ 
+builder.Services.AddScoped<IEmailSender, BBEmailService>();
+builder.Services.Configure<MailSettings>(builder.Configuration.GetSection("MailSettings"));
 
 builder.Services.AddControllersWithViews();
 
