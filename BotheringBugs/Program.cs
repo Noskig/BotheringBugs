@@ -1,6 +1,7 @@
 using BotheringBugs.Data;
 using BotheringBugs.Models;
 using BotheringBugs.Services;
+using BotheringBugs.Services.Factories;
 using BotheringBugs.Services.Interfaces;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
@@ -8,16 +9,20 @@ using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
+
+
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 // Add services to the container.
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseNpgsql(connectionString));
+    options.UseNpgsql(DataUtility.GetConnectionString(builder.Configuration),
+     o => o.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery))); 
 
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
 builder.Services.AddIdentity<BBUser, IdentityRole>(options => options.SignIn.RequireConfirmedAccount = true)
     .AddEntityFrameworkStores<ApplicationDbContext>()
+    .AddClaimsPrincipalFactory<BBUserClaimsPrincipalFactory>()
     .AddDefaultUI()
     .AddDefaultTokenProviders();
 
@@ -29,6 +34,7 @@ builder.Services.AddScoped<IBBTicketService, BBTickerService>();
 builder.Services.AddScoped<IBBTicketHistoryService, BBTicketHistoryService>();
 builder.Services.AddScoped<IBBNotificationService, BBNotificationService>();
 builder.Services.AddScoped<IBBInviteService, BBInviteService>();
+builder.Services.AddScoped<IBBFileService, BBFileService>();
  
 builder.Services.AddScoped<IEmailSender, BBEmailService>();
 builder.Services.Configure<MailSettings>(builder.Configuration.GetSection("MailSettings"));
@@ -36,6 +42,8 @@ builder.Services.Configure<MailSettings>(builder.Configuration.GetSection("MailS
 builder.Services.AddControllersWithViews();
 
 var app = builder.Build();
+
+AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -50,6 +58,9 @@ else
 }
 
 app.UseHttpsRedirection();
+
+await DataUtility.ManageDataAsync(app);
+
 app.UseStaticFiles();
 
 app.UseRouting();
@@ -61,5 +72,6 @@ app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
 app.MapRazorPages();
+
 
 app.Run();
