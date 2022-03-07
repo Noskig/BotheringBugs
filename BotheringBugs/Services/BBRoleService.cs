@@ -2,6 +2,7 @@
 using BotheringBugs.Models;
 using BotheringBugs.Services.Interfaces;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 
 namespace BotheringBugs.Services
 {
@@ -34,6 +35,24 @@ namespace BotheringBugs.Services
             return result;
         }
 
+        #region Get Roles
+        public async Task<List<IdentityRole>> GetRolesAsync()
+        {
+            try
+            {
+                List<IdentityRole> result = new();
+                result = await _context.Roles.ToListAsync();
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+
+                throw;
+            }
+        }
+
+        #endregion
         public async Task<List<BBUser>> GetUserInRoleAsync(string roleName, int companyId)
         {
             List<BBUser> users = (await _userManager.GetUsersInRoleAsync(roleName)).ToList();
