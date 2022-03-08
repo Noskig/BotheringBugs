@@ -7,16 +7,24 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using BotheringBugs.Data;
 using BotheringBugs.Models;
+using BotheringBugs.Extensions;
+using BotheringBugs.Models.ViewModels;
+using BotheringBugs.Services.Interfaces;
+using BotheringBugs.Models.Enums;
 
 namespace BotheringBugs.Controllers
 {
     public class ProjectsController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly IBBRolesService _roleService;
+        private readonly IBBLookUpService _lookupService;
 
-        public ProjectsController(ApplicationDbContext context)
+        public ProjectsController(ApplicationDbContext context, IBBRolesService roleService, IBBLookUpService bbLookUpService)
         {
             _context = context;
+            _roleService = roleService;
+            _lookupService = bbLookUpService;
         }
 
         // GET: Projects
@@ -47,11 +55,17 @@ namespace BotheringBugs.Controllers
         }
 
         // GET: Projects/Create
-        public IActionResult Create()
+        public async Task<IActionResult> Create()
         {
-            ViewData["CompanyId"] = new SelectList(_context.Companies, "Id", "Id");
-            ViewData["ProjectPriorityId"] = new SelectList(_context.ProjectPriorities, "Id", "Id");
-            return View();
+            int companyId = User.Identity.GetCompanyId().Value;
+
+            AddProjectWithPMViewModel model = new();
+
+            model.PMList = new SelectList(await _roleService.GetUsersInRoleAsync(Roles.ProjectManager.ToString(), companyId), "Id","FullName");
+            model.PriorityList = new SelectList(await _lookupService.GetProjectPrioritiesAsync(), "Id", "Name");
+
+
+            return View(model);
         }
 
         // POST: Projects/Create

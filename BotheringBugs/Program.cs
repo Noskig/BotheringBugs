@@ -35,7 +35,8 @@ builder.Services.AddScoped<IBBTicketHistoryService, BBTicketHistoryService>();
 builder.Services.AddScoped<IBBNotificationService, BBNotificationService>();
 builder.Services.AddScoped<IBBInviteService, BBInviteService>();
 builder.Services.AddScoped<IBBFileService, BBFileService>();
- 
+builder.Services.AddScoped<IBBLookUpService, BBLookUpService>(); 
+
 builder.Services.AddScoped<IEmailSender, BBEmailService>();
 builder.Services.Configure<MailSettings>(builder.Configuration.GetSection("MailSettings"));
 
