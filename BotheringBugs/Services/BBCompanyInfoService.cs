@@ -54,6 +54,7 @@ namespace BotheringBugs.Services
             List<Project> result = new();
             result = await _context.Projects.Where(p => p.CompanyId == companyId)
                                                 .Include(p => p.Members)
+                                                .Include(p => p.Company)
                                                 .Include(p => p.Tickets)
                                                     .ThenInclude(t => t.Comments)
                                                 .Include(p => p.Tickets)

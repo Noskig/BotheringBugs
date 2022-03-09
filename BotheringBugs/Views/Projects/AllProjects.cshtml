@@ -1,14 +1,25 @@
 ﻿@model IEnumerable<BotheringBugs.Models.Project>
+@using BotheringBugs.Models.Enums
+@using Microsoft.AspNetCore.Identity
+@using BotheringBugs.Services.Interfaces
+
+@inject UserManager<BBUser> UserManager
+@inject IBBProjectService ProjectService
 
 @{
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = "AllProjects";
+    BBUser bbUser = await UserManager.GetUserAsync(User);
+
 }
 
-<h1>Index</h1>
+<h1>All Projects</h1>
 
-<p>
-    <a asp-action="Create">Create New</a>
-</p>
+@if (User.IsInRole(nameof(Roles.Admin)) || User.IsInRole(nameof(Roles.ProjectManager)))
+{
+    <p>
+        <a asp-action="Create">Create New</a>
+    </p>
+}
 <table class="table">
     <thead>
         <tr>
@@ -85,19 +96,28 @@
                 </td>
                 <td>
                     @Html.DisplayFor(modelItem => item.ProjectPriority.Name)
-                </td>*
+                </td>
                 <td>
-                    <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
                     <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
-                    @if (item.Archived)
-                    {
-                        <a asp-action="Restore" asp-route-id="@item.Id">Restore</a>
-                    }
-                    else
-                    {
-                        <a asp-action="Archive" asp-route-id="@item.Id">Archive</a>
+
+                    @{
+                        bool IsProjectPM = (await ProjectService.GetProjectManagerAsync(item.Id))?.Id == bbUser.Id;
                     }
 
+                    @if (User.IsInRole(nameof(Roles.Admin)) || IsProjectPM)
+                    {
+
+                        <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> 
+
+                        @if (item.Archived)
+                        {
+                            <a asp-action="Restore" asp-route-id="@item.Id">Restore</a>
+                        }
+                        else
+                        {
+                            <a asp-action="Archive" asp-route-id="@item.Id">Archive</a>
+                        }
+                    }
                 </td>
             </tr>
         }
