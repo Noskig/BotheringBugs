@@ -269,7 +269,22 @@ namespace BotheringBugs.Services
 
         public async Task<Ticket> GetTicketByIdAsync(int ticketId)
         {
-            return await _context.Tickets.FirstOrDefaultAsync(t => t.Id == ticketId);
+            try
+            {
+                return await _context.Tickets
+                                        .Include(t => t.DevelopeerUser)
+                                        .Include(t => t.OwnerUser)
+                                        .Include(t => t.Project)
+                                        .Include(t => t.TicketPriority)
+                                        .Include(t => t.TicketStatus)
+                                        .Include(t => t.TicketType)
+                                             .FirstOrDefaultAsync(t => t.Id == ticketId);
+            }
+            catch (Exception)
+            {
+           
+                throw;
+            }
         }
 
         public async Task<BBUser> GetTicketDeveloperAsync(int ticketId, int companyId)

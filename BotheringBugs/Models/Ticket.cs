@@ -52,8 +52,9 @@ namespace BotheringBugs.Models
         public virtual Project Project { get; set; }
         public virtual TicketType TicketType { get; set; }
         public virtual TicketPriority TicketPriority { get; set; }
-        public virtual TicketStatus TicketStatus { get; set; }
+        public virtual TicketStatus TicketStatus { get; set; } 
         public virtual BBUser OwnerUser { get; set; }
+
         public virtual BBUser DevelopeerUser { get; set; }
 
         public virtual ICollection<TicketComment> Comments { get; set; } = new HashSet<TicketComment>();

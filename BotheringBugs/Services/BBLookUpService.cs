@@ -29,17 +29,41 @@ namespace BotheringBugs.Services
 
         public async Task<List<TicketPriority>> GetTicketPriorityAsync()
         {
-            throw new NotImplementedException();
+            try
+            {
+                return await _context.TicketPriorities.ToListAsync();
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
         }
 
-        public Task<List<TicketStatus>> GetTicketStatusAsync()
+        public async Task<List<TicketStatus>> GetTicketStatusAsync()
         {
-            throw new NotImplementedException();
+            try
+            {
+                return await _context.TicketStatuses.ToListAsync();
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
         }
 
-        public Task<List<TicketType>> GetTicketTypeAsync()
+        public async Task<List<TicketType>> GetTicketTypeAsync()
         {
-            throw new NotImplementedException();
+            try
+            {
+                return await _context.TicketTypes.ToListAsync();
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
         }
     }
 }
