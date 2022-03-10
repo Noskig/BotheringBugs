@@ -6,20 +6,6 @@ namespace BotheringBugs.Services
     {
         private readonly string[] suffixes = { "Bytes", "KB", "MB", "GB,", "TB", "PB" };
 
-        public string ConvertByteArrayToFile(byte[] fileData, string extension)
-        {
-            try
-            {
-                string imageBase64Data = Convert.ToBase64String(fileData);
-
-                return string.Format($"data:{extension};base64,{imageBase64Data}");
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error - error converting byte array to file: {ex.Message}");
-                throw;
-            }
-        }
 
         public async Task<byte[]> ConvertFileToByteArraySync(IFormFile file)
         {
@@ -40,7 +26,33 @@ namespace BotheringBugs.Services
                 throw;
             }
         }
+        public string ConvertByteArrayToFile(byte[] fileData, string extension)
+        {
+            try
+            {
+                string imageBase64Data = Convert.ToBase64String(fileData);
 
+                return string.Format($"data:{extension};base64,{imageBase64Data}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error - error converting byte array to file: {ex.Message}");
+                throw;
+            }
+        }
+
+        public string GetFileIcon(string file)
+        {
+            string fileImage = "default";
+
+            if (!string.IsNullOrWhiteSpace(file))
+            {
+                fileImage = Path.GetExtension(file).Replace(".", "");
+                return $"/img/contenttype/{fileImage}.png";
+            }
+
+            return fileImage;
+        }
         public string FormatFileSize(long bytes)
         {
             int counter = 0;
@@ -52,19 +64,6 @@ namespace BotheringBugs.Services
             }
             return String.Format("{0:n1}{1}", fileSize, suffixes[counter]);
 
-        }
-
-        public string GetFileIcon(string file)
-        {
-            string fileImage = "default";
-
-            if (!string.IsNullOrWhiteSpace(file))
-            {
-                fileImage = Path.GetExtension(file).Replace(".", "");
-                return $"/img/png/{fileImage}.png";
-            }
-
-            return fileImage;
         }
     }
 }

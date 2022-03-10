@@ -8,5 +8,7 @@ namespace BotheringBugs.Services.Interfaces
 
         Task<List<TicketHistory>> GetCompanyTicketsHistoriesAsync(int companyId);
         Task<List<TicketHistory>> GetProjectTicketsHistoriesAsync(int projectId, int companyId);
+
+        public Task<List<TicketAttachment>> GetLatestTicketAttachmentAsync(int ticketId);
     }
 }

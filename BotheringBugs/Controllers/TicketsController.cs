@@ -21,15 +21,18 @@ namespace BotheringBugs.Controllers
         private readonly IBBProjectService _projectService;
         private readonly IBBLookUpService _lookUpService;
         private readonly IBBTicketService _ticketService;
+        private readonly IBBFileService _fileService;
 
         public TicketsController(ApplicationDbContext context, UserManager<BBUser> userManager,
-            IBBProjectService projectService, IBBLookUpService lookUpService, IBBTicketService ticketService)
+            IBBProjectService projectService, IBBLookUpService lookUpService, IBBTicketService ticketService, 
+            IBBFileService fileService)
         {
             _context = context;
             _userManager = userManager;
             _projectService = projectService;
             _lookUpService = lookUpService;
             _ticketService = ticketService;
+            _fileService = fileService;
         }
 
         // GET: Tickets
@@ -46,7 +49,30 @@ namespace BotheringBugs.Controllers
 
             List<Ticket> tickets = await _ticketService.GetTicketsByUserIdAsync(user.Id, user.CompanyId);
 
-            
+
+            return View(tickets);
+        }
+        public async Task<IActionResult> AllTickets()
+        {
+            int companyId = User.Identity.GetCompanyId().Value;
+
+            List<Ticket> tickets = await _ticketService.GetAllTicketsByCompanyAsync(companyId);
+
+            if (User.IsInRole(nameof(Roles.Developer)) || User.IsInRole(nameof(Roles.Submitter)))
+            {
+                return View(tickets.Where(t=> t.Archived == false));
+            }
+            else
+            {
+                return View(tickets);
+            }
+        }
+        public async Task<IActionResult> ArchivedTickets()
+        {
+            int companyId = User.Identity.GetCompanyId().Value;
+
+            List<Ticket> tickets = await _ticketService.GetArchivedTicketsAsync(companyId);
+
             return View(tickets);
         }
 
@@ -58,13 +84,8 @@ namespace BotheringBugs.Controllers
                 return NotFound();
             }
 
-            var ticket = await _context.Tickets
-                .Include(t => t.OwnerUser)
-                .Include(t => t.Project)
-                .Include(t => t.TicketPriority)
-                .Include(t => t.TicketStatus)
-                .Include(t => t.TicketType)
-                .FirstOrDefaultAsync(m => m.Id == id);
+            Ticket ticket = await _ticketService.GetTicketByIdAsync(id.Value);
+
             if (ticket == null)
             {
                 return NotFound();
@@ -148,18 +169,18 @@ namespace BotheringBugs.Controllers
             }
 
             Ticket ticket = await _ticketService.GetTicketByIdAsync(id.Value);
-            
+
             if (ticket == null)
             {
                 return NotFound();
             }
 
-            
-            
+
+
             ViewData["TicketPriorityId"] = new SelectList(await _lookUpService.GetTicketPriorityAsync(), "Id", "Name", ticket.TicketPriorityId);
             ViewData["TicketStatusId"] = new SelectList(await _lookUpService.GetTicketStatusAsync(), "Id", "Name", ticket.TicketStatusId);
             ViewData["TicketTypeId"] = new SelectList(await _lookUpService.GetTicketTypeAsync(), "Id", "Name", ticket.TicketTypeId);
-            
+
             return View(ticket);
         }
 
@@ -210,7 +231,57 @@ namespace BotheringBugs.Controllers
             return View(ticket);
         }
 
-        // GET: Tickets/Delete/5
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AddTicketComment([Bind("Id,TicketId,Comment")] TicketComment ticketComment)
+        {
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    ticketComment.UserId =  _userManager.GetUserId(User);
+                    ticketComment.Created = DateTimeOffset.Now;
+
+                    await _ticketService.AddTicketCommentAsync(ticketComment);
+                }
+                catch (Exception)
+                {
+
+                    throw;
+                }
+
+            }
+
+            return RedirectToAction("Details", new { id = ticketComment.TicketId });
+        }
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AddTicketAttachment([Bind("Id,FormFile,Description,TicketId")] TicketAttachment ticketAttachment)
+        {
+            string statusMessage;
+
+            if (ModelState.IsValid && ticketAttachment.FormFile != null)
+            {
+                ticketAttachment.FileData = await _fileService.ConvertFileToByteArraySync(ticketAttachment.FormFile);
+                ticketAttachment.FileName = ticketAttachment.FormFile.FileName;
+                ticketAttachment.FileContentType = ticketAttachment.FormFile.ContentType;
+
+                ticketAttachment.Created = DateTimeOffset.Now;
+                ticketAttachment.UserID = _userManager.GetUserId(User);
+
+                await _ticketService.AddTicketAttachmentAsync(ticketAttachment);
+                statusMessage = "Success: New attachment added to Ticket.";
+            }
+            else
+            {
+                statusMessage = "Error: Invalid data.";
+
+            }
+
+            return RedirectToAction("Details", new { id = ticketAttachment.TicketId, message = statusMessage });
+        }
+
+        // GET: Tickets/Archive/5
         public async Task<IActionResult> Archive(int? id)
         {
             if (id == null)
@@ -229,7 +300,7 @@ namespace BotheringBugs.Controllers
             return View(ticket);
         }
 
-        // POST: Tickets/Delete/5
+        // POST: Tickets/Archive/5
         [HttpPost, ActionName("Archive")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ArchiveConfirmed(int id)
@@ -274,6 +345,16 @@ namespace BotheringBugs.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+        public async Task<IActionResult> ShowFile(int id)
+        {
+            TicketAttachment ticketAttachment = await _ticketService.GetTicketAttachmentByIdAsync(id);
+            string fileName = ticketAttachment.FileName;
+            byte[] fileData = ticketAttachment.FileData;
+            string ext = Path.GetExtension(fileName).Replace(".", "");
+
+            Response.Headers.Add("Content-Disposition", $"inline; filename={fileName}");
+            return File(fileData, $"application/{ext}");
+        }
         private async Task<bool> TicketExists(int id)
         {
             int companyId = User.Identity.GetCompanyId().Value;

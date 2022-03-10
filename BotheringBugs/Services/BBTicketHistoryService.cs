@@ -180,6 +180,13 @@ namespace BotheringBugs.Services
             }
         }
 
+        public async Task<List<TicketAttachment>> GetLatestTicketAttachmentAsync(int ticketId)
+        {
+            List<TicketAttachment> attachments = await  _context.TicketAttachments.Where(ta => ta.TicketId == ticketId).ToListAsync();
+
+            return attachments;
+        }
+
         public async Task<List<TicketHistory>> GetProjectTicketsHistoriesAsync(int projectId, int companyId)
         {
             try
