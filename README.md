@@ -20,7 +20,8 @@ Project is created with:
 * Ament library version: 999
 	
 ## Setup
-To run this project, you need to PostgreSql installed
+To run this project, you need to PostgreSql installed.
+
 Then just run the project.
 
 ---work in progress--
